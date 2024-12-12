@@ -2,8 +2,6 @@
 
 # Guida di Installazione Arch Linux (by 7ir3)
 
----
-
 Lo scopo di questa guida è illustrare **step by step** (o command-by-command) come installare un sistema Linux basato su [Arch Linux](https://archlinux.org/) con un focus particolare sugli aspetti di sicurezza e stabilità del sistema.
 
 Per ogni sezione verranno descritte nel dettaglio le ragioni delle scelte dei comandi utilizzati. Tuttavia, ecco un breve riepilogo dei punti salienti relativi al sistema:
