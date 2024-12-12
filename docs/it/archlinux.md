@@ -378,7 +378,6 @@ pacstrap -K /mnt base linux-zen linux-zen-headers linux-firmware btrfs-progs cry
 genfstab -U -p /mnt >> /mnt/etc/fstab
 ```
 
-
 ## 4 Entrare dentro il sistema appena installato
 
 Questa operazione è facile ma al quanto importante per procedere con la **configurazione** del sistema e della guida.
