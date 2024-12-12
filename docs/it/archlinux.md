@@ -243,8 +243,7 @@ Viene utilizzato il comando [`mkfs`](https://wiki.archlinux.org/title/File_syste
 
 - **EFI**, `mkfs.fat -F32 /dev/sda1`
 - **/boot**, `mkfs.ext4 /dev/sda2`
-- **/ (LVM)**:
-  
+- **/ (LVM)**:  
   - **root**, `mkfs.btrfs -L root /dev/mapper/archlinux-root`
   - **home**, `mkfs.btrfs -L home /dev/mapper/archlinux-home`
   - **swap**, `mkswap /dev/mapper/archlinux-swap`
@@ -343,33 +342,18 @@ Ora si può installare il sistema **Arch Linux** sul disco configurato.
 
 I seguenti pacchetti sono **OBBLIGATORI**:
 
-- `base` e `base-devel`: 
-  - Contengono i pacchetti base del sistema operativo e strumenti essenziali per la compilazione di software.
-  - [Arch Wiki: Base](https://wiki.archlinux.org/title/Arch_Linux#Base) 
-  - [Arch Wiki: Base-devel](https://wiki.archlinux.org/title/Development_tools#Base-devel)
-- `linux-firmware`: 
-  - Include i firmware necessari per l'hardware comune.
-  - [Arch Wiki: Linux Firmware](https://wiki.archlinux.org/title/Linux#Firmware)
-- `linux-zen` e `linux-zen-headers`: 
-  - Kernel Linux ottimizzato per performance e reattività.
-  - [Arch Wiki: Kernel](https://wiki.archlinux.org/title/Kernel#Linux_zen)
+- [`base`](https://wiki.archlinux.org/title/Arch_Linux#Base) e [`base-devel`](https://wiki.archlinux.org/title/Development_tools#Base-devel): Contengono i pacchetti base del sistema operativo e strumenti essenziali per la compilazione di software.
+- [`linux-firmware`](https://wiki.archlinux.org/title/Linux#Firmware): Include i firmware necessari per l'hardware comune.
+- [`linux-zen`](https://wiki.archlinux.org/title/Kernel#Linux_zen) e `linux-zen-headers`: Kernel Linux ottimizzato per performance e reattività. 
 - `grub`, `efibootmgr` e `sbctl`:
-  - `grub`: Bootloader per gestire l'avvio del sistema operativo.
-  - `efibootmgr`: Strumento per configurare i bootloader in modalità EFI.
-  - `sbctl`: Strumento per gestire Secure Boot con chiavi personalizzate.
-  - [Arch Wiki: GRUB](https://wiki.archlinux.org/title/GRUB)
-  - [Arch Wiki: EFIBootMgr](https://wiki.archlinux.org/title/EFISTUB#efibootmgr)
-  - [Arch Wiki: SBCTL](https://wiki.archlinux.org/title/Secure_Boot#Using_sbctl)
-- `networkmanager`:
-  - Strumento per configurare e gestire connessioni di rete.
-  - [Arch Wiki: NetworkManager](https://wiki.archlinux.org/title/NetworkManager)
+  - [`grub`](https://wiki.archlinux.org/title/GRUB): Bootloader per gestire l'avvio del sistema operativo.
+  - [`efibootmgr`](https://wiki.archlinux.org/title/EFISTUB#efibootmgr): Strumento per configurare i bootloader in modalità EFI.
+  - [`sbctl`](https://wiki.archlinux.org/title/Secure_Boot#Using_sbctl): Strumento per gestire Secure Boot con chiavi personalizzate.
+- [`networkmanager`](https://wiki.archlinux.org/title/NetworkManager): Strumento per configurare e gestire connessioni di rete.
 - `btrfs-progs`, `cryptsetup` e `lvm2`:
-  - `btrfs-progs`: Strumenti per la gestione di volumi BtrFS.
-  - `cryptsetup`: Strumento per la gestione di dischi cifrati.
-  - `lvm2`: Strumento per la gestione di volumi logici.
-  - [Arch Wiki: Btrfs](https://wiki.archlinux.org/title/Btrfs)
-  - [Arch Wiki: Cryptsetup](https://wiki.archlinux.org/title/Dm-crypt)
-  - [Arch Wiki: LVM](https://wiki.archlinux.org/title/LVM)
+  - [`btrfs-progs`](https://wiki.archlinux.org/title/Btrfs): Strumenti per la gestione di volumi BtrFS.
+  - [`cryptsetup`](https://wiki.archlinux.org/title/Dm-crypt): Strumento per la gestione di dischi cifrati.
+  - [`lvm2`](https://wiki.archlinux.org/title/LVM): Strumento per la gestione di volumi logici.
 
 In aggiunta, è possibile installare altri pacchetti come:
 
