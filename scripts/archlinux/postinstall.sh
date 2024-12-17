@@ -1,28 +1,10 @@
 #!/bin/bash
 #
 # Arch Linux post-installation script by @7ir3
-
-# 0. Preparation
-# 
-# 1. AUR helper
 #
-# 2. BtrFS snapshot
-#   2.1 snapper
-#   2.2 grub-btrfs
-#
-# 3. SSH
-#   3.1 Install OpenSSH
-#   3.2 Generate SSH key
-#
-# 4. GNOME
-#   4.1 Install (minimal) GNOME
-#   4.2 Minimal dconf configuration
-#   4.3 Install GNOME extensions
-#   4.4 Install applications (flatpak)
-#
-# 5. Extra packages
-#
-# 6. Dotfiles (if specified)
+# Reference: - https://www.dwarmstrong.org/btrfs-snapshots-rollbacks/
+#            - https://wiki.archlinux.org/title/AUR_helpers
+#            - https://github.com/morganamilo/paru
 
 
 
@@ -31,13 +13,22 @@
 #
 # NOTE: Edit the following variables to match your desired system configuration.
 
-# ======  Users  ======
-user="user"                   # User
-
-# ======  Others  ======
-github="email@email.it"       # GitHub email
-
-
+FLATPAK=(
+  "com.raggesilver.BlackBox"
+  "com.mattjakeman.ExtensionManager"
+  "org.gnome.TextEditor"
+  "org.gnome.Calculator"
+  "org.gnome.Calendar"
+  "org.gnome.Papers"
+  "io.github.zen_browser.zen"
+  "com.brave.Browser"
+  "com.vscodium.codium"
+)                                        # Flatpak applications
+# NOTE: Applications such as Firefox, Thunderbird, etc. are not included
+# in the list because they are already installed by default.
+USER=$(whoami)                           # User
+PDF_DIR="$HOME/Downloads"                # PDF save directory
+CUPS_PDF_CONF="/etc/cups/cups-pdf.conf"  # CUPS PDF configuration file
 
 ################################################################################
 ################################################################################
@@ -60,6 +51,11 @@ cd -                                                    # Return to previous dir
 rm -rf /tmp/paru                                        # Clean up
 paru --noconfirm -Syyu                                  # Update AUR helper
 
+# --- 1.1 AUR packages (QoL)
+paru -S --noconfirm  aur-out-of-date \
+  pkgoutofdate \
+  aur-talk                                              # AUR packages
+
 # ======  2 - BtrFS snapshot  ======
 # Reference: - https://www.dwarmstrong.org/btrfs-snapshots-rollbacks/
 sudo pacman -S --noconfirm snapper snap-pac          # Packages
@@ -79,7 +75,7 @@ sudo chown :wheel /.snapshots                        # Allow 'wheel' to browse t
 # --- 2.3 Automatic timeline snapshots
 # Timed auto-snapshots config
 sudo tee "/etc/snapper/configs/root" > /dev/null << EOF
-ALLOW_USERS="$user"
+ALLOW_USERS="$USER"
 TIMELINE_MIN_AGE="1800"
 TIMELINE_LIMIT_HOURLY="5"
 TIMELINE_LIMIT_DAILY="7"
@@ -101,26 +97,52 @@ sudo pacman -S --noconfirm grub-btrfs inotify-tools  # Packages
 sudo sed -i 's|^#GRUB_BTRFS_GRUB_DIRNAME=.*|GRUB_BTRFS_GRUB_DIRNAME="/boot/grub"|' /etc/default/grub-btrfs/config
 sudo systemctl enable --now grub-btrfs.path          # Auto-regenerate grub-btrfs.cfg
 # Add the hook
-sed -i '/^MODULES=/ s/(\(.*\))/(\1 grub-btrfs-overlayfs)/' /etc/mkinitcpio.conf
-mkinitcpio -P --uki archlinux                        # Generate initramfs (with UKI)
-grub-mkconfig -o /boot/grub/grub.cfg                 # Generate GRUB config
+sudo sed -i '/^MODULES=/ s/(\(.*\))/(\1 grub-btrfs-overlayfs)/' /etc/mkinitcpio.conf
+sudo mkinitcpio -P --uki archlinux                   # Generate initramfs (with UKI)
+sudo grub-mkconfig -o /boot/grub/grub.cfg            # Generate GRUB config
 
-# ======  3 - SSH  ======
-# Reference: - https://www.dwarmstrong.org/ssh-keys/
-#            - https://wiki.archlinux.org/title/OpenSSH
-sudo pacman -S --noconfirm openssh  # Install OpenSSH
-mkdir -p ~/.ssh/keyring             # Create SSH directory and keyring
-chmod 700 ~/.ssh                    # Set permissions
-chmod 700 ~/.ssh/keyring            # Set permissions
-touch ~/.ssh/authorized_keys        # Create authorized_keys file
-chmod 600 ~/.ssh/authorized_keys    # Set permissions
+# ======  4 - CUPS  ======
+sudo pacman -S --noconfirm cups cups-pdf    # Install CUPS and dependencies
+sudo systemctl enable cups.service          # Enable CUPS
 
-# --- 3.1 Generate SSH key
-# - Host
-# - GitHub
-mkdir ~/.ssh/keyring/"$(whoami)@$(hostname)"
-chmod 700 ~/.ssh/keyring/"$(whoami)@$(hostname)"
-ssh-keygen -t ed25519 -C "$(whoami)@$(hostname)" -f ~/.ssh/keyring/"$(whoami)@$(hostname)"
-mkdir ~/.ssh/keyring/github
-chmod 700 ~/.ssh/keyring/github
-ssh-keygen -t ed25519 -C "$github" -f ~/.ssh/keyring/github
+# --- 4.1 CUPS configuration (PDF saving)
+if grep -q "^Out .*" "$CUPS_PDF_CONF"; then
+  sudo sed -i "s|^Out .*|Out $PDF_DIR|" "$CUPS_PDF_CONF"
+else
+  echo "Out $PDF_DIR" | sudo tee -a "$CUPS_PDF_CONF"
+fi
+
+# ======  5 - Bluetooth  ======
+sudo pacman -S --noconfirm bluez bluez-utils  # Install Bluez and dependencies
+
+# --- 5.1 Bluetooth configuration
+# --- ControllerMode = dual
+# Uncomment and set ControllerMode = dual
+sudo sed -i 's/^\s*#*\s*ControllerMode\s*=.*/ControllerMode = dual/' "$BLUETOOTH_CONF"
+# Add ControllerMode = dual if it does not exist
+if ! grep -q "^ControllerMode = dual" "$BLUETOOTH_CONF"; then
+  echo "ControllerMode = dual" | sudo tee -a "$BLUETOOTH_CONF" > /dev/null
+fi
+# --- Kernel Experimental
+# Check if [General] exists in the configuration file
+if ! grep -q "^\[General\]" "$BLUETOOTH_CONF"; then
+  echo -e "\n[General]" | sudo tee -a "$BLUETOOTH_CONF" > /dev/null
+fi
+
+# Modify Experimental = true
+sudo sed -i '/^\[General\]/,/^\[/{s/^\s*#*\s*Experimental\s*=.*/Experimental = true/}' "$BLUETOOTH_CONF"
+
+# Add Experimental = true if it does not exist
+if ! grep -A1 "^\[General\]" "$BLUETOOTH_CONF" | grep -q "^Experimental = true"; then
+  sudo sed -i '/^\[General\]/a Experimental = true' "$BLUETOOTH_CONF"
+fi
+sudo systemctl enable bluetooth               # Enable Bluetooth
+
+# ======  6 - GNOME  ======
+
+
+
+################################################################################
+# END SCRIPT
+
+sudo reboot now  # Reboot system
